@@ -6,6 +6,10 @@
 
 var pianoSize;
 var scl;
+var whitePieces = [];
+var blackPieces = [];
+var posX;
+var posY;
 
 function setup(){
   pianoSize = 5;
@@ -19,77 +23,60 @@ function draw(){
   background(101);
   //draws minimum piano with 7 white and 5 blacks and then repeats
   for (var i = 0; i < pianoSize; i++) {
-    whitePieces(i);
-    blackPieces(i);
+    shoWhitePieces(i);
+    //blackPieces(i);
 
 	}
 
 }
 
-function whitePieces(repetible){
+function shoWhitePieces(repetible){
   noFill();
 	for (var i = 1; i < 8; i++) {
       fill(255);
       if(repetible > 0){
-        rect(scl * ( (7 * repetible) + i), height / 4, scl, 250, 0, 0, 5, 5);
+        posX = scl * ( (7 * repetible) + i);
       }
       else{
-        rect(scl * i, height / 4, scl, 250, 0, 0, 5, 5);
+        posX = scl * i;
+        // rect(scl * i, height / 4, scl, 250, 0, 0, 5, 5);
       }
+      posY = height / 4;  
+      
+      whitePieces[i] = new WhitePiece(posX,posY);
+      whitePieces[i].show();
       
   }
-}
-
-//add to script
-function whiteNotes(){
-  fill(0);
-  for(var j = 1; j < nWhiteNotes + 1; j++){
-    text('Do', scl,height / 2 );
-    text('Re', scl * 2, height / 2);
-    text('Mi', scl * 3, height / 2);
-    text('Fa', scl * 4, height / 2);
-    text('Sol', scl * 5,height / 2);
-    text('La', scl * 6, height / 2);
-    text('Si', scl * 7, height / 2);
-  }  
 }
 
 function blackPieces(repetible){
   fill(0);
   
+
   for (var i = 1; i < 3; i++) {
     if(repetible > 0){
-      rect(scl * ( (7 * repetible) + i ) + scl * 0.72, height / 4, scl / 2, 125, 0, 0, 15, 15);
+      posX = scl * ( (7 * repetible) + i ) + scl * 0.72;
+      //rect(, , scl / 2, 125, 0, 0, 15, 15);
     }else{
-      rect(scl * i + scl * 0.72, height / 4, scl / 2, 125, 0, 0, 15, 15);
+      posX = scl * i + scl * 0.72;
+      //rect(, height / 4, scl / 2, 125, 0, 0, 15, 15);
     }
+    posY = height / 4;
+
+    blackPieces[i] = new BlackPiece(posX,posY);
+    blackPieces[i].showLeft();
+    blackPieces[i].showRight();
   }
+
   for(var i = 4; i < 7; i++){
     if(repetible > 0){
       rect(scl * ( (7 * repetible) + i) + scl * 0.72, height / 4, scl / 2, 125, 0, 0, 15, 15);
     }else{
       rect(scl * i + scl * 0.72, height / 4, scl / 2, 125, 0, 0, 15, 15);
     }
+    
   }  
   
-}
-
-//add to script
-function blackNotes(){
-  fill(255);
-  text('Do#', 90, height -200);
-  text('Re#', 140, height -200);
-  
-  text('Fa#', 240, height -200);
-  text('Sol#', 290, height -200);
-  text('La#', 340, height -200);
-  
-  text('Do#', 440, height -200);
-  text('Re#', 490, height -200);
-  
-  text('Fa#', 590, height -200);
-  text('Sol#', 640, height -200);
-  text('La#', 690, height -200);
 }
 
 function preload() {
@@ -135,3 +122,79 @@ function keyPressed(){
   }
   return false;
 }
+
+class WhitePiece{
+  constructor(x,y){
+    this.x = x;
+    this.y = y;
+  }
+
+  show(){
+    rect(this.x, this.y / 4, scl, 250, 0, 0, 5, 5);
+  }
+
+}
+
+class BlackPiece{
+  constructor(x,y){
+    this.x = x;
+    this.y = y;
+  }
+
+  showLeft(){
+    rect(this.x, this.y, scl / 2, 125, 0, 0, 15, 15);
+  }
+
+  showRight(){
+
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+//add to script
+function whiteNotes(){
+  fill(0);
+  for(var j = 1; j < nWhiteNotes + 1; j++){
+    text('Do', scl,height / 2 );
+    text('Re', scl * 2, height / 2);
+    text('Mi', scl * 3, height / 2);
+    text('Fa', scl * 4, height / 2);
+    text('Sol', scl * 5,height / 2);
+    text('La', scl * 6, height / 2);
+    text('Si', scl * 7, height / 2);
+  }  
+}
+//add to script
+function blackNotes(){
+  fill(255);
+  text('Do#', 90, height -200);
+  text('Re#', 140, height -200);
+  
+  text('Fa#', 240, height -200);
+  text('Sol#', 290, height -200);
+  text('La#', 340, height -200);
+  
+  text('Do#', 440, height -200);
+  text('Re#', 490, height -200);
+  
+  text('Fa#', 590, height -200);
+  text('Sol#', 640, height -200);
+  text('La#', 690, height -200);
+}
+
+*/
