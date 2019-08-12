@@ -1,200 +1,215 @@
 //Made by Tomás Sáez
 // Piano with genetic algorithm
-//This piano learns every song you told him to
 
-//Styles on hold, etc
+//Thanks to daviddeborin for the audio files
+//His repo: https://github.com/daviddeborin/88-Key-Virtual-Piano/tree/master/src
 
-var pianoSize;
+
+var whiteNotesSize;
+var blackNotesSize;
 var scl;
 var whitePieces = [];
 var blackPieces = [];
-var posX;
-var posY;
+var posX,posY;
+
 
 function setup(){
-  pianoSize = 5;
+  whiteNotesSize = 35;
+  blackNotesSize = whiteNotesSize;
   scl = 30;
+  iteration = 1;
+  
   createCanvas(1200,650);
   frameRate(60);
+  
+  background(101);
+  
   preload();
 }
 
 function draw(){
-  background(101);
-  //draws minimum piano with 7 white and 5 blacks and then repeats
-  for (var i = 0; i < pianoSize; i++) {
-    shoWhitePieces(i);
-    //blackPieces(i);
-
-	}
-
-}
-
-function shoWhitePieces(repetible){
-  noFill();
-	for (var i = 1; i < 8; i++) {
-      fill(255);
-      if(repetible > 0){
-        posX = scl * ( (7 * repetible) + i);
-      }
-      else{
-        posX = scl * i;
-        // rect(scl * i, height / 4, scl, 250, 0, 0, 5, 5);
-      }
-      posY = height / 4;  
-      
-      whitePieces[i] = new WhitePiece(posX,posY);
+  
+  for(var i = 0; i < whitePieces.length;i++){
       whitePieces[i].show();
-      
-  }
-}
-
-function blackPieces(repetible){
-  fill(0);
-  
-
-  for (var i = 1; i < 3; i++) {
-    if(repetible > 0){
-      posX = scl * ( (7 * repetible) + i ) + scl * 0.72;
-      //rect(, , scl / 2, 125, 0, 0, 15, 15);
-    }else{
-      posX = scl * i + scl * 0.72;
-      //rect(, height / 4, scl / 2, 125, 0, 0, 15, 15);
-    }
-    posY = height / 4;
-
-    blackPieces[i] = new BlackPiece(posX,posY);
-    blackPieces[i].showLeft();
-    blackPieces[i].showRight();
   }
 
-  for(var i = 4; i < 7; i++){
-    if(repetible > 0){
-      rect(scl * ( (7 * repetible) + i) + scl * 0.72, height / 4, scl / 2, 125, 0, 0, 15, 15);
-    }else{
-      rect(scl * i + scl * 0.72, height / 4, scl / 2, 125, 0, 0, 15, 15);
+  for(var i = 0; i < blackPieces.length; i++){
+    if(blackPieces[i] == null){}
+    else{
+      blackPieces[i].show();
     }
-    
-  }  
-  
+
+  }
+
 }
 
-function preload() {
-  sound_a = loadSound('piano-sound/c3.ogg');
-  sound_s = loadSound('piano-sound/d3.ogg');
-  sound_d = loadSound('piano-sound/e3.ogg');
-  sound_f = loadSound('piano-sound/f3.ogg');
-  sound_j = loadSound('piano-sound/g3.ogg');
-  sound_k = loadSound('piano-sound/a3.ogg');
-  sound_l = loadSound('piano-sound/b3.ogg');
-  sound_semicolon = loadSound('piano-sound/ha4.ogg');
+function mousePressed(){
+  for(var i = 0; i < whitePieces.length;i++){
+    whitePieces[i].clicked(mouseX,mouseY);
+  }
+  
+  for(var i = 0; i < blackPieces.length;i++){
+    if(blackPieces[i] == null){}
+    else{
+      blackPieces[i].clicked(mouseX,mouseY);
+    }
+  }
+
 }
+
 
 function keyPressed(){
   
   if (keyCode === 65) { // a
-    sound_a.setVolume(1);
-    sound_a.play();
+    sound_2.setVolume(1);
+    sound_2.play();
   }
   if(keyCode === 83){ // s
-    sound_s.setVolume(1);
-    sound_s.play();
+    sound_2.setVolume(1);
+    sound_2.play();
   }
   if (keyCode === 68) { //d
-    sound_d.setVolume(1);
-    sound_d.play();
+    sound_2.setVolume(1);
+    sound_2.play();
   } 
   if(keyCode === 70){ //f
-    sound_f.setVolume(1);
-    sound_f.play();
+    sound_2.setVolume(1);
+    sound_2.play();
   }
-  if(keyCode === 74){ //j
-    sound_j.setVolume(1);
-    sound_j.play();
+  if(keyCode === 74){ //i
+    sound_2.setVolume(1);
+    sound_2.play();
   }
-  if(keyCode === 75){ //k
-    sound_k.setVolume(1);
-    sound_k.play();
+  if(keyCode === 75){ //i
+    sound_2.setVolume(1);
+    sound_2.play();
   }
   if(keyCode === 76){ //l
-    sound_l.setVolume(1);
-    sound_l.play();
+    sound_2.setVolume(1);
+    sound_2.play();
   }
   return false;
 }
 
-class WhitePiece{
-  constructor(x,y){
-    this.x = x;
-    this.y = y;
-  }
 
-  show(){
-    rect(this.x, this.y / 4, scl, 250, 0, 0, 5, 5);
+function preload(){
+  //draws minimum piano with 7 white and 5 blacks and then repeats
+  createWhitePieces();
+  createBlackPieces();
+}
+
+function createWhitePieces(){
+  var count = 0;
+  var intensityLevel = 2; //c2 , d2 , e2, ... 
+  for(var i = 0; i < whiteNotesSize; i++)
+  {
+    posX = (scl * i) + 30;
+    posY = height / 4;  
+
+    //Creating white key
+    whitePieces[i] = new WhitePiece(posX,posY);
+
+    if(count == 7) 
+    {
+      count = 0; 
+      intensityLevel++;
+    }
+    
+    let keyValue = createWhiteKeyValue(count,intensityLevel);
+    //Assigning sound to this key
+    whitePieces[i].assignKeyValue(keyValue);
+
+    count += 1;
   }
 
 }
 
-class BlackPiece{
-  constructor(x,y){
-    this.x = x;
-    this.y = y;
+function createWhiteKeyValue(i,intensityLevel){
+  //From ASCII table
+  //https://www.cs.cmu.edu/~pattis/15-1XX/common/handouts/ascii.html
+
+  // 1. Create letter inside the intensity level
+  var keyValue = 67; //start with C
+  keyValue += i; 
+
+  if(keyValue == 72){//if the value is H
+    keyValue = 65;
+  } else if(keyValue == 73){ //if the value is I
+    keyValue = 66;
+  } else if(keyValue > 73){
+    console.log("Please check counter variable, keyValue shouldn't be higher than 73");
   }
 
-  showLeft(){
-    rect(this.x, this.y, scl / 2, 125, 0, 0, 15, 15);
-  }
+  //Convert ascii value to letter
+  var letter = String.fromCharCode(keyValue);
+  // 2. Assign intensity level to letter and store it
+  var sound = loadSound("piano-sound/" + letter + intensityLevel + ".mp4");
 
-  showRight(){
+  // 3. Return sound
+  return sound;
+}
+
+function createBlackPieces(){
+  var count = 0;
+  var intensityLevel = 2; //c2 , d2 , e2, ... 
+  for(var i = 0; i < blackNotesSize;i++){
+      posX = ( (scl * i) + (scl * 0.72) ) + 30;
+      posY = 41;
+      blackPieces[i] = new BlackPiece(posX,posY);
+
+      if(
+        i == 2 || i == 6 || i == 9 || 
+        i == 13 || i == 16 || i == 20 || 
+        i == 23 || i == 27 || i == 30 || 
+        i == 34
+        ){
+        blackPieces[i] = null;
+        continue;
+      }
+
+      //There are only 5 black pieces inside 7 whites
+      if(count >= 5) 
+      {
+        count = 0; 
+        intensityLevel++;
+      }
+
+      let keyValue = createBlackKeyValue(count,intensityLevel);
+      //Assigning sound to this key
+      blackPieces[i].assignKeyValue(keyValue);
+      count++;
 
   }
 }
 
+function createBlackKeyValue(i,intensityLevel){
+  //From ASCII table
+  //https://www.cs.cmu.edu/~pattis/15-1XX/common/handouts/ascii.html
+
+  if(intensityLevel > 6) // is higher than c6, d6, e6, ... (I don't have files higher than 6 :'( )
+    return;
+
+  // 1. Create letter inside the intensity level
+  var keyValue = 67; //start with C
+  keyValue += i; 
+
+  console.log(i);
+
+  if(keyValue == 69){//if the value is E
+    keyValue = 70; //Assign F
+  }else if(keyValue == 70){ //If the value is F
+    keyValue = 71; //Assign G
+  }else if(keyValue == 71){ //If the value is G
+    keyValue = 65; //Assign A
+  }
 
 
+  //Convert ascii value to letter
+  var letter = String.fromCharCode(keyValue);
+  // 2. Assign intensity level to letter and store it
+  var sound = loadSound("piano-sound/" + letter + "ha"  + intensityLevel + ".mp4");
+  //console.log(sound);
 
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-//add to script
-function whiteNotes(){
-  fill(0);
-  for(var j = 1; j < nWhiteNotes + 1; j++){
-    text('Do', scl,height / 2 );
-    text('Re', scl * 2, height / 2);
-    text('Mi', scl * 3, height / 2);
-    text('Fa', scl * 4, height / 2);
-    text('Sol', scl * 5,height / 2);
-    text('La', scl * 6, height / 2);
-    text('Si', scl * 7, height / 2);
-  }  
+  // 3. Return sound
+  return sound;
 }
-//add to script
-function blackNotes(){
-  fill(255);
-  text('Do#', 90, height -200);
-  text('Re#', 140, height -200);
-  
-  text('Fa#', 240, height -200);
-  text('Sol#', 290, height -200);
-  text('La#', 340, height -200);
-  
-  text('Do#', 440, height -200);
-  text('Re#', 490, height -200);
-  
-  text('Fa#', 590, height -200);
-  text('Sol#', 640, height -200);
-  text('La#', 690, height -200);
-}
-
-*/
