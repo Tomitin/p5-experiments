@@ -1,0 +1,48 @@
+var backgroundColor;
+var isOverRectangle;
+ 
+function setup() 
+{
+  // set canvas size
+  createCanvas(400, 400);
+  
+  // default background color
+  backgroundColor = color(255, 255, 255);
+}
+ 
+function draw() 
+{
+  background(backgroundColor);
+ 
+  // check if mouse is inside the rectangle
+  // mouseX >= x && mouseX <= x+width && mouseY >= y && mouseY <= y+height
+  if (mouseX >= 200 && mouseX <= 200+75 && mouseY >= 150 && mouseY <= 150+100) 
+  {
+    isOverRectangle = true;
+  } else {
+    isOverRectangle = false;
+  }
+  
+  // draw a rectangle
+  rectMode(CORNER);
+  stroke(0);
+  strokeWeight(5);
+  if(isOverRectangle == true)
+  {
+    fill(100);
+    cursor(HAND);
+  } else {
+	fill(200); 
+	cursor(ARROW); 
+  }
+  rect(200, 175, 75, 100);
+  
+}
+ 
+function mousePressed()
+{
+  if(isOverRectangle == true)
+  {
+    backgroundColor = color(random(255), random(255), random(255));
+  }
+}
