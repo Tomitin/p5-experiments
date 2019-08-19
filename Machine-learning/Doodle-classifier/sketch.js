@@ -1,75 +1,147 @@
-let r,g,b;
-let brain;
+const len = 784;
+const total_data = 1000;
+
+const CAT = 0;
+const RAINBOW = 1;
+const TRAIN = 2;
+
+let cats_data;
+let trains_data;
+let rainbows_data;
+
+let cats = {};
+let trains = {};
+let rainbows = {};
+
+let nn;
+
+function preload(){
+  cats_data = loadBytes('data/cats1000.bin');
+  trains_data = loadBytes('data/trains1000.bin');
+  rainbows_data = loadBytes('data/rainbows1000.bin');
+}
 
 function setup(){
-  createCanvas(600,300);
-  noLoop();
-  brain = new NeuralNetwork(3,3,2);
+  createCanvas(280,280);
+  background(255);
 
-  for (let i = 0; i < 10000; i++){
-    r = random(255);
-    g = random(255);
-    b = random(255);
-    let targets = trainColor(r,g,b);
-    let inputs = [r / 255, g / 255, b / 255];
-    brain.train(inputs,targets)
-  }
+  prepareData(cats, cats_data, CAT);
+  prepareData(rainbows, rainbows_data, RAINBOW);
+  prepareData(trains, trains_data, TRAIN);
 
-  pickColor();
+  nn = new NeuralNetwork(len, 64, 3);
+
+  let training = [];
+  training = training.concat(cats.training);
+  training = training.concat(rainbows.training);
+  training = training.concat(trains.training);
+
+  let testing = [];
+  testing = testing.concat(cats.testing);
+  testing = testing.concat(rainbows.testing);
+  testing = testing.concat(trains.testing);
+
+  // trainEpoch(training);
+  // testAll(testing);
+
+  let trainButton = select('#train');
+  let epochCounter = 0;
+  trainButton.mousePressed(function (){
+    trainEpoch(training);
+    epochCounter++;
+    console.log("Epoch: " + epochCounter);
+  });
+
+  let testButton = select('#test');
+  testButton.mousePressed(function (){
+    let percent = testAll(testing);
+    console.log("Accuracy percentage: " + nf(percent,2,2) + "%");
+  });
+
+  let guessButton = select('#guess');
+  guessButton.mousePressed(function (){
+    let inputs = [];
+    let img = get();
+    img.resize(28,28);
+    img.loadPixels();
+    for(let i = 0; i < len; i++){
+      let bright = img.pixels[i * 4];
+      inputs[i] = (255 - bright) / 255.0;
+    }
+
+    let guess = nn.predict(inputs);
+    let m = max(guess)
+    let classification = guess.indexOf(m);
+    if(classification === CAT){
+      console.log("cat");
+    } else if(classification === RAINBOW){
+      console.log("rainbow");
+    } else if(classification === TRAIN){
+      console.log("train");
+    }
+  });
+
+  let clearButton = select('#removeWhiteCanvas');
+  clearButton.mousePressed(function(){
+    background(255);
+  });
 }
 
 function draw(){
-  background(r, g, b);
-  strokeWeight(4);
+  strokeWeight(8);
   stroke(0);
-  line(width/2,0,width/2,height);
-
-  textSize(64);
-  noStroke();
-  fill(0);
-  textAlign(CENTER, CENTER);
-  text("black", 150, 100);
-  fill(255);
-  text("white", 450, 100);
-
-  let selected = colorPredictor(r,g,b);
-
-  if(selected === "black"){
-    fill(0);
-    ellipse(150,200,60);
-  }else{
-    fill(255);
-    ellipse(450,200,60);
+  if(mouseIsPressed){
+    line(pmouseX, pmouseY, mouseX, mouseY);
   }
 }
 
-function mousePressed(){
-  pickColor();
-}
+function trainEpoch(training){
+  shuffle(training, true);
 
-function trainColor(r,g,b){
-  if(r + g + b > (255 * 3) / 2){
-    return [1,0];
-  }else{
-    return [0,1];
+  for(let i = 0; i < training.length; i++){
+    let data = training[i];
+    let inputs = Array.from(data).map(x => x / 255);
+
+    let label = data.label;
+    let targets = [0,0,0];
+    targets[label] = 1;  
+    nn.train(inputs,targets);
   }
 }
 
-function pickColor(){
-  r = random(255);
-  g = random(255);
-  b = random(255);
-  redraw();
+function testAll(testing){
+  let correct = 0;
+  for(let i = 0; i < testing.length; i++){
+    let data = testing[i];
+    let inputs = Array.from(data).map(x => x / 255);
+    let label = data.label;
+
+    let guess = nn.predict(inputs);
+    
+    let m = max(guess)
+    let classification = guess.indexOf(m);
+
+    if(classification === label){
+      correct++;
+    }
+  }
+  let percent = 100 * (correct / testing.length);
+  return percent;
 }
 
-function colorPredictor(r,g,b){
+function prepareData(category, data, label){
+  category.training = [];
+  category.testing = [];
 
-  let inputs = [r / 255, g / 255, b / 255];
-  let outputs = brain.predict(inputs);
-
-  if(outputs[0] > outputs[1]){
-    return "black";
-  } else{
-    return "white";
+  let threshold = floor(0.8 * total_data);
+  for(let i = 0; i < total_data; i++){
+    let offset = i * len;
+    if(i < threshold){
+      category.training[i] = data.bytes.subarray(offset, offset + len);
+      category.training[i].label = label;
+    } else{
+      category.testing[i - threshold] = data.bytes.subarray(offset, offset + len);
+      category.testing[i - threshold].label = label;
+    }
   }
 }
